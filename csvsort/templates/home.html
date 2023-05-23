@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <title>CSV SORT</title>
+
+</head>
+
+<body>
+    <div class="container">
+        <h1>CSV Sort</h1>
+    </div>
+
+    <div class="container">
+        <div class="column">
+            <div id="menu">
+                <h3>Sort By</h3>
+                <form method="get" action="/">
+                    {% for heading in header %}
+                    <input type="submit" value={{heading}} name="sort_choice" />
+                    {% endfor %}
+                </form>
+            </div>
+            <div id="tablecontainer">
+                <table>
+                    <tr>
+                        {% for heading in header %}
+                        <th>
+                            {{heading}}
+                        </th>
+                        {% endfor %}
+                    </tr>
+
+                    {% for line in lines %}
+                    <tr>
+                        {% for element in line%}
+                        <td>{{element}}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+
+        <div class="column">
+            <div id="requirements">
+                <h3>
+                    Format Requirements
+                </h3>
+                <ul>
+                    <li>Only CSV files are allowed.</li>
+                    <li>Please make sure that the file has a proper header, with an entry for each column:<br><span
+                            class="code">Vorname,Nachname,Telefonnummer,PLZ,Stadt</span></li>
+                </ul>
+            </div>
+
+            <form method="post" enctype="multipart/form-data" action="/">
+                <input type="file" id="inFile" name="uploaded_file" accept=".csv">
+                <input type="submit" value="Upload File">
+            </form>
+
+            {% with messages = get_flashed_messages () %}
+            {% if messages %}
+            <ul class=flashes>
+                {% for message in messages %}
+                <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            {% endwith %}
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,41 @@
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+table,
+td,
+th {
+    border: 1px solid black;
+}
+
+.code{
+    background-color:lightgray;
+    border: 1px solid black;
+    font-style: italic;
+    padding-left: 2px;
+    padding-right: 4px;
+}
+
+.container{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+.column{
+    display: flex;
+    gap: 10px;
+    max-width: 50%;
+    flex-direction: column;
+}
+
+#tablecontainer{
+    min-height:min-content;
+    overflow: scroll;
+}
+
+#menu{
+    display: flex;
+    flex-direction: column;
+}

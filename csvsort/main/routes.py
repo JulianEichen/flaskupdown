@@ -1,13 +1,15 @@
-import csv
-import operator
-import os
-from csvsort.main.utils import allowed_file, validate_content
+import pandas as pd
+from csvsort.main.utils import (allowed_file,
+                                get_csv_path,
+                                save_csv_df,
+                                validate_content)
 from flask import (Blueprint,
                    current_app,
                    flash,
                    redirect,
                    render_template,
                    request,
+                   send_file,
                    url_for)
 
 main = Blueprint('main', __name__)
@@ -18,31 +20,25 @@ def home():
     '''
     base route to show the table and use sort buttons
     '''
-    if os.path.exists(os.path.join(current_app.root_path,
-                                   current_app.config['UPLOAD_FOLDER'],
-                                   'upload.csv')):
-        csv_path = os.path.join(current_app.root_path,
-                                current_app.config['UPLOAD_FOLDER'],
-                                'upload.csv')
+    csv_path = get_csv_path()
+
+    df = pd.read_csv(csv_path, dtype='str')
+    header = df.columns
+
+    sort_choice = request.args.get('sort_choice')
+    if sort_choice:
+        sorted_df = df.sort_values(by=sort_choice)
+        save_csv_df(sorted_df)
+        lines = sorted_df.values.tolist()
     else:
-        csv_path = os.path.join(current_app.root_path, 'static', 'persons.csv')
+        lines = df.values.tolist()
 
-    with open(csv_path, newline='', encoding='utf-8') as file:
-        reader = csv.reader(file)
-        header = next(reader)
-        col_ind = {header[i]: i for i in range(0, len(header))}
-        srt_choice = request.args.get('sort_choice')
-
-        if srt_choice in header:
-            reader = sorted(reader,
-                            key=operator.itemgetter(col_ind[srt_choice]))
-
-        return render_template('home.html',
-                               header=header,
-                               lines=reader)
+    return render_template('home.html',
+                           header=header,
+                           lines=lines)
 
 
-@main.route('/', methods=(['POST']))
+@main.route('/upload', methods=['POST'])
 def upload_file():
     '''
     CSV upload route
@@ -52,7 +48,7 @@ def upload_file():
     uploaded_file = request.files.get('uploaded_file')
 
     # (1)
-    if not (uploaded_file):
+    if not uploaded_file:
         flash('Please Select A File')
         return redirect(url_for('main.home'))
 
@@ -65,16 +61,19 @@ def upload_file():
         flash('There Is Something Wrong With Your File')
         return redirect(url_for('main.home'))
 
-    upload_path = os.path.join(current_app.root_path,
-                               current_app.config['UPLOAD_FOLDER'],
-                               'upload.csv')
-
-    if not uploaded_df.empty and allowed_file(uploaded_file.filename):
-        if os.path.exists(upload_path):  # (3) remove existing file
-            os.remove(upload_path)
-        uploaded_df.to_csv(path_or_buf=upload_path,
-                           sep=',',
-                           index=False)
+    if allowed_file(uploaded_file.filename):
+        save_csv_df(uploaded_df)
         flash('Upload Successful')
 
     return redirect(url_for('main.home'))
+
+
+@main.route('/download', methods=['GET'])
+def download_file():
+    '''
+    CSV download route
+    - click button
+    - get file
+    '''
+    file_path = get_csv_path()
+    return send_file(file_path, as_attachment=True)

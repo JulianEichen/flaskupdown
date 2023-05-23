@@ -42,6 +42,9 @@
                     {% endfor %}
                 </table>
             </div>
+            <form method="get" action="/download">
+                <input type="submit" value="Download File">
+            </form>
         </div>
 
         <div class="column">
@@ -56,7 +59,7 @@
                 </ul>
             </div>
 
-            <form method="post" enctype="multipart/form-data" action="/">
+            <form method="post" enctype="multipart/form-data" action="/upload">
                 <input type="file" id="inFile" name="uploaded_file" accept=".csv">
                 <input type="submit" value="Upload File">
             </form>

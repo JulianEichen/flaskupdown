@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import pytest
 
 
 def test_home_page(test_client):
@@ -47,7 +48,7 @@ def test_csv_upload(test_client):
 
     data = {'uploaded_file': (open(new_csv_path, 'rb'), 'upload.csv')}
 
-    response = test_client.post('/', data=data, follow_redirects=True)
+    response = test_client.post('/upload', data=data, follow_redirects=True)
 
     assert response.status_code == 200
     assert validate_order(new_csv_path, response.data)
@@ -66,8 +67,8 @@ def test_csv_double_upload(test_client):
     data_1 = {'uploaded_file': (open(new_csv_path, 'rb'), 'upload.csv')}
     data_2 = {'uploaded_file': (open(new_csv_path, 'rb'), 'upload.csv')}
 
-    response_1 = test_client.post('/', data=data_1, follow_redirects=True)
-    response_2 = test_client.post('/', data=data_2, follow_redirects=True)
+    response_1 = test_client.post('/upload', data=data_1, follow_redirects=True)
+    response_2 = test_client.post('/upload', data=data_2, follow_redirects=True)
 
     assert response_1.status_code == 200
     assert validate_order(new_csv_path, response_1.data)
@@ -84,7 +85,7 @@ def test_empty_upload(test_client):
     THEN check that response is valid
     '''
 
-    response = test_client.post('/', follow_redirects=True)
+    response = test_client.post('/upload', follow_redirects=True)
 
     default_csv_name = 'persons.csv'
     test_dir = os.path.join(os.path.dirname(__file__), 'test_input')
@@ -107,7 +108,7 @@ def test_corrupted_upload(test_client):
 
     data = {'uploaded_file': (open(new_csv_path, 'rb'), 'upload.csv')}
 
-    response = test_client.post('/', data=data, follow_redirects=True)
+    response = test_client.post('/upload', data=data, follow_redirects=True)
 
     assert response.status_code == 200
     assert b"There Is Something Wrong With Your File" in response.data
@@ -117,7 +118,7 @@ def validate_order(csv_path, response_data):
     '''
     check equality of datafram from a csv and response data
     '''
-    data_frames = pd.read_html(response_data, converters={'Telefonnummer': str})
+    data_frame = pd.read_html(response_data, converters={'Telefonnummer': str})
     input_frame = pd.read_csv(csv_path, dtype='str')
 
-    return input_frame.equals(data_frames[0].astype(str))
+    return input_frame.equals(data_frame[0].astype(str))

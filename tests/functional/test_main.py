@@ -1,7 +1,6 @@
 import os
 import pandas as pd
-import pytest
-
+from io import BytesIO
 
 def test_home_page(test_client):
     '''
@@ -39,7 +38,7 @@ def test_sort(test_client):
 def test_csv_upload(test_client):
     '''
     GIVEN an app configured for testing
-    WHEN the '/' page is posted to, with a new CSV file
+    WHEN the '/upload' page is posted to, with a new CSV file
     THEN check that response is valid
     '''
     new_csv_name = 'persons_copy.csv'
@@ -57,7 +56,7 @@ def test_csv_upload(test_client):
 def test_csv_double_upload(test_client):
     '''
     GIVEN an app configured for testing, with default csv data
-    WHEN the '/' page is posted to, with a new CSV file 2 times
+    WHEN the '/upload' page is posted to, with a new CSV file 2 times
     THEN check that response is valid
     '''
     new_csv_name = 'persons_copy.csv'
@@ -81,7 +80,7 @@ def test_csv_double_upload(test_client):
 def test_empty_upload(test_client):
     '''
     GIVEN an app configured for testing
-    WHEN the '/' page is posted to, with no file selected
+    WHEN the '/upload' page is posted to, with no file selected
     THEN check that response is valid
     '''
 
@@ -99,7 +98,7 @@ def test_empty_upload(test_client):
 def test_corrupted_upload(test_client):
     '''
     GIVEN an app configured for testing
-    WHEN the '/' page is posted to, with an image file that bypasses the .csv check
+    WHEN the '/upload' page is posted to, with an image file that bypasses the .csv check
     THEN check that response is valid
     '''
     new_csv_name = "frog.csv"
@@ -112,6 +111,21 @@ def test_corrupted_upload(test_client):
 
     assert response.status_code == 200
     assert b"There Is Something Wrong With Your File" in response.data
+
+
+def test_download(test_client):
+    '''
+    GIVEN an app configured for testing
+    WHEN the '/download' page is requested
+    THEN check that the reponse is valid
+    '''
+    screen_data = test_client.get('/').data
+    screen_df = pd.read_html(screen_data, converters={'Telefonnummer': str})
+    response = test_client.get('download')
+    out_df = pd.read_csv(BytesIO(response.data), dtype='str')
+
+    assert response.status_code == 200
+    assert out_df.equals(screen_df[0].astype(str))
 
 
 def validate_order(csv_path, response_data):

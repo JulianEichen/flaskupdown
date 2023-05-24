@@ -9,6 +9,7 @@ Little exercise project, to implement upload, representation, manipulation and d
 - Jinja2: template engine
 - pandas: CSV manipulation
 - pytest: testing framework
+- coverage: creation of the coverage report
 
 ## Structure
 
@@ -34,3 +35,6 @@ and access the app in a browser under http://localhost:5000/
 ### Navigation
 
 The homepage shows a default table, which can be sported by clicking the buttons above it or downloaded by using the button below. It is also possible to upload a new file with the options to the right. 
+
+## Testing
+Basic functional pytest-Testing is provided, with the main goal to reach [100% code coverage](https://julianeichen.github.io/flaskupdown_coverage).
